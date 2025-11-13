@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Простой общий чат</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Общий чат</h1>
+    </header>
+
+    <section class="join" id="joinSection">
+      <label>Введите ваше имя</label>
+      <input id="nameInput" placeholder="Например: Анна" />
+      <button id="joinBtn">Войти</button>
+    </section>
+
+    <section class="chat hidden" id="chatSection">
+      <ul id="messages"></ul>
+
+      <form id="msgForm">
+        <input id="msgInput" autocomplete="off" placeholder="Напишите сообщение..." />
+        <button>Отправить</button>
+      </form>
+    </section>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
