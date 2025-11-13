@@ -4,6 +4,7 @@ import {
   getDatabase,
   ref,
   push,
+  get,
   onChildAdded,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
@@ -29,6 +30,10 @@ const firebaseConfig = {
 
 
 initializeApp(firebaseConfig);
+console.log('Firebase config:', firebaseConfig);
+if(!firebaseConfig.databaseURL){
+  console.warn('firebaseConfig.databaseURL is missing — Realtime Database URL should be set in firebaseConfig. Open Firebase Console → Realtime Database → Web setup to get the URL.');
+}
 const db = getDatabase();
 const messagesRef = ref(db, 'messages');
 
@@ -42,6 +47,21 @@ const msgForm = document.getElementById('msgForm');
 const msgInput = document.getElementById('msgInput');
 
 let myName = null;
+
+// restore saved name from localStorage so account persists across reloads
+try{
+  const savedName = localStorage.getItem('chatName');
+  if (savedName){
+    myName = savedName;
+    nameInput.value = myName;
+    joinSection.classList.add('hidden');
+    chatSection.classList.remove('hidden');
+    msgInput.focus();
+    console.log('Restored chat name from localStorage:', myName);
+  }
+}catch(e){
+  console.warn('localStorage unavailable:', e);
+}
 
 function addMessageElement(msg){
   const li = document.createElement('li');
@@ -63,17 +83,33 @@ function addMessageElement(msg){
 }
 
 // Listen for new messages
+// initial fetch to check permissions and show history
+get(messagesRef).then((snap) => {
+  if (snap.exists()) {
+    snap.forEach(child => addMessageElement(child.val()));
+  } else {
+    console.log('No messages yet');
+  }
+}).catch(err => {
+  console.error('Initial read error:', err);
+  if (err && (err.code === 'PERMISSION_DENIED' || String(err).toLowerCase().includes('permission'))){
+    alert('Ошибка доступа к базе: проверьте правила Realtime Database (permissions).');
+  }
+});
+
+// realtime listener with error callback
 onChildAdded(messagesRef, (snap) => {
   const data = snap.val();
-  // Firebase serverTimestamp is stored as {'.sv': 'timestamp'} when pushed,
-  // but after network roundtrip the DB stores a number. We handle both.
   if (data) addMessageElement(data);
+}, (err) => {
+  console.error('Realtime listener error:', err);
 });
 
 joinBtn.addEventListener('click', () => {
   const name = nameInput.value.trim();
   if(!name) return alert('Введите имя');
   myName = name;
+  try{ localStorage.setItem('chatName', myName); }catch(e){console.warn('Could not save name to localStorage', e)}
   joinSection.classList.add('hidden');
   chatSection.classList.remove('hidden');
   msgInput.focus();
