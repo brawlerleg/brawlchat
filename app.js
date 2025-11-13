@@ -1,13 +1,16 @@
 // client-side chat using Firebase Realtime Database (modular SDK)
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
 import {
-  getDatabase,
-  ref,
-  push,
-  get,
-  onChildAdded,
-  serverTimestamp
-} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp,
+  Timestamp
+} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
 // --- PUT YOUR FIREBASE CONFIG HERE ---
 const firebaseConfig = {
@@ -31,11 +34,8 @@ const firebaseConfig = {
 
 initializeApp(firebaseConfig);
 console.log('Firebase config:', firebaseConfig);
-if(!firebaseConfig.databaseURL){
-  console.warn('firebaseConfig.databaseURL is missing — Realtime Database URL should be set in firebaseConfig. Open Firebase Console → Realtime Database → Web setup to get the URL.');
-}
-const db = getDatabase();
-const messagesRef = ref(db, 'messages');
+const db = getFirestore();
+const messagesCol = collection(db, 'messages');
 
 // DOM
 const joinSection = document.getElementById('joinSection');
@@ -82,27 +82,30 @@ function addMessageElement(msg){
   messagesList.scrollTop = messagesList.scrollHeight;
 }
 
-// Listen for new messages
-// initial fetch to check permissions and show history
-get(messagesRef).then((snap) => {
-  if (snap.exists()) {
-    snap.forEach(child => addMessageElement(child.val()));
+// initial fetch to show history and check permissions (Firestore)
+getDocs(query(messagesCol, orderBy('ts'))).then((snap) => {
+  if (!snap.empty) {
+    snap.forEach(doc => addMessageElement(doc.data()));
   } else {
     console.log('No messages yet');
   }
 }).catch(err => {
-  console.error('Initial read error:', err);
-  if (err && (err.code === 'PERMISSION_DENIED' || String(err).toLowerCase().includes('permission'))){
-    alert('Ошибка доступа к базе: проверьте правила Realtime Database (permissions).');
+  console.error('Initial read error (Firestore):', err);
+  if (err && String(err).toLowerCase().includes('permission')){
+    alert('Ошибка доступа к базе: проверьте правила Firestore (permissions).');
   }
 });
 
-// realtime listener with error callback
-onChildAdded(messagesRef, (snap) => {
-  const data = snap.val();
-  if (data) addMessageElement(data);
+// realtime listener (Firestore)
+const q = query(messagesCol, orderBy('ts'));
+onSnapshot(q, (snapshot) => {
+  snapshot.docChanges().forEach(change => {
+    if (change.type === 'added') {
+      addMessageElement(change.doc.data());
+    }
+  });
 }, (err) => {
-  console.error('Realtime listener error:', err);
+  console.error('Realtime listener error (Firestore):', err);
 });
 
 joinBtn.addEventListener('click', () => {
@@ -121,14 +124,14 @@ msgForm.addEventListener('submit', async (e) => {
   const text = msgInput.value.trim();
   if(!text) return;
   try{
-    await push(messagesRef, {
+    await addDoc(messagesCol, {
       name: myName,
       text,
-      ts: Date.now()
+      ts: serverTimestamp()
     });
     msgInput.value = '';
   }catch(err){
-    console.error('Ошибка записи в базу:', err);
+    console.error('Ошибка записи в Firestore:', err);
     alert('Ошибка отправки сообщения');
   }
 });
