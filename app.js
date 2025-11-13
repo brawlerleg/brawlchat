@@ -70,7 +70,17 @@ function addMessageElement(msg){
   const nameSpan = document.createElement('span');
   nameSpan.className = 'name';
   nameSpan.textContent = msg.name || 'Аноним';
-  const ts = msg.ts ? new Date(msg.ts).toLocaleTimeString() : '';
+  let ts = '';
+  if (msg.ts) {
+    // Firestore Timestamp has toMillis(); serverTimestamp may arrive as a Timestamp
+    if (typeof msg.ts.toMillis === 'function') {
+      ts = new Date(msg.ts.toMillis()).toLocaleTimeString();
+    } else if (typeof msg.ts === 'number') {
+      ts = new Date(msg.ts).toLocaleTimeString();
+    } else {
+      try { ts = new Date(msg.ts).toLocaleTimeString(); } catch(e){ ts = '' }
+    }
+  }
   meta.append(nameSpan, ts ? ` · ${ts}` : '');
 
   const text = document.createElement('div');
@@ -82,30 +92,21 @@ function addMessageElement(msg){
   messagesList.scrollTop = messagesList.scrollHeight;
 }
 
-// initial fetch to show history and check permissions (Firestore)
-getDocs(query(messagesCol, orderBy('ts'))).then((snap) => {
-  if (!snap.empty) {
-    snap.forEach(doc => addMessageElement(doc.data()));
-  } else {
+// realtime listener (Firestore) — single source of truth, handles initial load and updates
+const q = query(messagesCol, orderBy('ts'));
+onSnapshot(q, (snapshot) => {
+  // clear and re-render to avoid duplicates and keep order
+  messagesList.innerHTML = '';
+  if (snapshot.empty) {
     console.log('No messages yet');
+    return;
   }
-}).catch(err => {
-  console.error('Initial read error (Firestore):', err);
+  snapshot.docs.forEach(doc => addMessageElement(doc.data()));
+}, (err) => {
+  console.error('Realtime listener error (Firestore):', err);
   if (err && String(err).toLowerCase().includes('permission')){
     alert('Ошибка доступа к базе: проверьте правила Firestore (permissions).');
   }
-});
-
-// realtime listener (Firestore)
-const q = query(messagesCol, orderBy('ts'));
-onSnapshot(q, (snapshot) => {
-  snapshot.docChanges().forEach(change => {
-    if (change.type === 'added') {
-      addMessageElement(change.doc.data());
-    }
-  });
-}, (err) => {
-  console.error('Realtime listener error (Firestore):', err);
 });
 
 joinBtn.addEventListener('click', () => {
@@ -124,11 +125,12 @@ msgForm.addEventListener('submit', async (e) => {
   const text = msgInput.value.trim();
   if(!text) return;
   try{
-    await addDoc(messagesCol, {
+    const docRef = await addDoc(messagesCol, {
       name: myName,
       text,
       ts: serverTimestamp()
     });
+    console.log('Message sent, doc id:', docRef.id);
     msgInput.value = '';
   }catch(err){
     console.error('Ошибка записи в Firestore:', err);
