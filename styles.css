@@ -1,75 +1,74 @@
-:root{
-  --bg:#000000;
-  --card:#0a0a0a;
-  --accent:#0088cc;
-  --accent-dark:#0077b5;
-  --muted:#666666;
-  --you-bg:#056162;
-  --their-bg:#1a1a1a;
-  --header-bg:#000000;
-  --border:#1a1a1a;
-}
-*{box-sizing:border-box}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="true" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0088cc" />
+  <title>Чат</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Общий чат</h1>
+      <button class="profile-btn" id="profileBtn">👤</button>
+    </header>
 
-body{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:var(--bg); margin:0; height:100vh; color:#ffffff; display:flex; flex-direction:column; overflow:hidden}
-.container{max-width:720px;margin:0 auto;display:flex;flex-direction:column;height:100vh;padding:0;width:100%;overflow:hidden}
-header{background:var(--header-bg);color:white;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;flex-shrink:0}
-h1{margin:0;font-size:18px;font-weight:600}
-.profile-btn{background:transparent;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px}
+    <section class="join" id="joinSection">
+      <label>Введите ваше имя</label>
+      <input id="nameInput" placeholder="Например: Анна" />
+      <button id="joinBtn">Войти</button>
+    </section>
 
-.join{flex-direction:column;gap:12px;align-items:stretch;padding:16px;background:var(--bg)}
-label{display:block;font-weight:500;margin-bottom:6px;color:#aaaaaa}
-input{padding:10px 12px;border:1px solid var(--border);border-radius:20px;font-size:15px;width:100%;background:#0a0a0a;color:#ffffff}
-button{background:var(--accent);color:white;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-weight:600;font-size:15px}
+    <section class="chat hidden" id="chatSection">
+      <ul id="messages"></ul>
 
-.chat{background:var(--bg);padding:0;border-radius:0;display:flex;flex-direction:column;flex:1;overflow:hidden}
-.hidden{display:none}
+      <form id="msgForm">
+        <input id="msgInput" autocomplete="off" placeholder="Напишите сообщение..." />
+        <button>Отправить</button>
+      </form>
+    </section>
 
-#messages{list-style:none;padding:8px 0;margin:0;flex:1;overflow:auto;display:flex;flex-direction:column;gap:2px}
+    <!-- Profile Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Профиль</h2>
+          <button class="close-btn" id="closeSettingsBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="avatar-large" id="avatarLarge">А</div>
+          <div class="setting-item">
+            <label>Ваше имя</label>
+            <div class="input-wrapper">
+              <input id="settingsNameInput" type="text" placeholder="Введите имя" />
+              <button id="updateNameBtn" class="update-btn">Сохранить</button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label>Цвет аватара</label>
+            <div class="color-picker">
+              <button class="color-btn" data-color="#0088cc" style="background:linear-gradient(135deg,#0088cc,#00bfff)"></button>
+              <button class="color-btn" data-color="#00cc88" style="background:linear-gradient(135deg,#00cc88,#00ff99)"></button>
+              <button class="color-btn" data-color="#cc8800" style="background:linear-gradient(135deg,#cc8800,#ffaa00)"></button>
+              <button class="color-btn" data-color="#cc0088" style="background:linear-gradient(135deg,#cc0088,#ff00aa)"></button>
+              <button class="color-btn" data-color="#8800cc" style="background:linear-gradient(135deg,#8800cc,#aa00ff)"></button>
+              <button class="color-btn" data-color="#00cccc" style="background:linear-gradient(135deg,#00cccc,#00ffff)"></button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label>Загрузить картинку</label>
+            <input id="avatarImageInput" type="file" accept="image/*" />
+            <button id="clearImageBtn" class="clear-btn">Убрать картинку</button>
+          </div>
+          <button id="logoutBtn" class="logout-btn">Выйти из аккаунта</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-.meta{font-size:12px;color:var(--muted);margin-bottom:2px;display:flex;align-items:center;gap:4px}
-#msgForm{display:flex;gap:8px;padding:8px 12px;background:var(--bg);border-top:1px solid var(--border)}
-#msgInput{flex:1;padding:10px 16px;border-radius:20px;border:1px solid var(--border);font-size:15px;background:#0a0a0a;color:#ffffff}
-
-.you{background:var(--you-bg);align-self:flex-end;border-bottom-right-radius:4px;padding:8px 12px;border-radius:18px;max-width:78%;word-wrap:break-word}
-.their{background:var(--their-bg);align-self:flex-start;border-bottom-left-radius:4px;padding:8px 12px;border-radius:18px;max-width:78%;word-wrap:break-word}
-.name{font-weight:600;margin-right:4px;font-size:12px;color:#0088cc}
-
-/* message bubble layout with avatar */
-.msg-row{display:flex;gap:8px;align-items:flex-end;padding:0 12px;margin:4px 0}
-.msg-row.their{flex-direction:row}
-.msg-row.you{flex-direction:row-reverse;padding-right:4px}
-.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0088cc,#00bfff);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
-
-/* modal styles */
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:flex-end;z-index:1000}
-.modal.hidden{display:none}
-.modal-content{background:var(--card);width:100%;max-height:80vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:slideUp 0.3s ease-out}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border)}
-.modal-header h2{margin:0;font-size:18px}
-.close-btn{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:0;width:32px;height:32px}
-.modal-body{padding:16px;display:flex;flex-direction:column;gap:16px}
-.avatar-large{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0088cc,#00bfff);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:32px;margin:0 auto}
-.setting-item{display:flex;flex-direction:column;gap:8px}
-.setting-item label{color:var(--muted);font-weight:500}
-.input-wrapper{display:flex;gap:8px}
-.input-wrapper input{flex:1}
-.update-btn{background:var(--accent);color:white;border:none;padding:10px 16px;border-radius:20px;cursor:pointer;font-weight:600;flex-shrink:0}
-.logout-btn{background:#cc0000;color:white;border:none;padding:10px 16px;border-radius:20px;cursor:pointer;font-weight:600}
-
-/* responsive tweaks */
-@media (max-width:600px){
-  .container{padding:0}
-  h1{font-size:16px}
-  .you, .their{max-width:85%}
-  .avatar{width:28px;height:28px;font-size:12px}
-  input, #msgInput{font-size:16px}
-  .msg-row{padding:0 10px;margin:3px 0}
-}
-
-@media (min-width:601px){
-  .container{margin:0 auto}
-  .modal{align-items:center}
-  .modal-content{max-height:60vh;border-radius:20px;max-width:500px}
-}
+  <script type="module" src="app.js"></script>
+</body>
+</html>
