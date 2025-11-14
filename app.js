@@ -222,11 +222,51 @@ document.querySelectorAll('.color-btn').forEach(btn => {
     
     // Update avatar preview
     avatarLarge.style.background = `linear-gradient(135deg,${myAvatarColor},${lightenColor(myAvatarColor)})`;
+    avatarLarge.style.backgroundImage = 'none';
     
     // Save to localStorage
     try { localStorage.setItem('chatAvatarColor', myAvatarColor); } catch(e) {}
   });
 });
+
+// Image upload handler
+const avatarImageInput = document.getElementById('avatarImageInput');
+const clearImageBtn = document.getElementById('clearImageBtn');
+
+if (avatarImageInput) {
+  avatarImageInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      myAvatarImage = event.target.result;
+      try { localStorage.setItem('chatAvatarImage', myAvatarImage); } catch(e) {
+        console.warn('Could not save image to localStorage (might be too large)');
+      }
+      
+      // Update preview
+      avatarLarge.style.backgroundImage = `url('${myAvatarImage}')`;
+      avatarLarge.style.backgroundSize = 'cover';
+      avatarLarge.style.backgroundPosition = 'center';
+      avatarLarge.textContent = '';
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+if (clearImageBtn) {
+  clearImageBtn.addEventListener('click', () => {
+    myAvatarImage = null;
+    avatarImageInput.value = '';
+    try { localStorage.removeItem('chatAvatarImage'); } catch(e) {}
+    
+    // Reset to color
+    avatarLarge.style.backgroundImage = 'none';
+    avatarLarge.textContent = (myName || 'А').charAt(0).toUpperCase();
+    avatarLarge.style.background = `linear-gradient(135deg,${myAvatarColor},${lightenColor(myAvatarColor)})`;
+  });
+}
 
 // Close settings modal
 closeSettingsBtn.addEventListener('click', () => {
