@@ -51,6 +51,10 @@ const settingsNameInput = document.getElementById('settingsNameInput');
 const updateNameBtn = document.getElementById('updateNameBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const avatarLarge = document.getElementById('avatarLarge');
+const profileBtn = document.getElementById('profileBtn');
+
+// Скрыть кнопку профиля изначально
+profileBtn.style.display = 'none';
 
 let myName = null;
 
@@ -62,6 +66,7 @@ try{
     nameInput.value = myName;
     joinSection.classList.add('hidden');
     chatSection.classList.remove('hidden');
+    profileBtn.style.display = 'inline-block';
     msgInput.focus();
     console.log('Restored chat name from localStorage:', myName);
   }
@@ -137,33 +142,21 @@ joinBtn.addEventListener('click', () => {
   try{ localStorage.setItem('chatName', myName); }catch(e){console.warn('Could not save name to localStorage', e)}
   joinSection.classList.add('hidden');
   chatSection.classList.remove('hidden');
-  updateProfileButton();
+  profileBtn.style.display = 'inline-block';
   msgInput.focus();
 });
 
-// Profile button in header
-function updateProfileButton(){
-  if(!document.getElementById('profileBtn')){
-    const profileBtn = document.createElement('button');
-    profileBtn.id = 'profileBtn';
-    profileBtn.className = 'profile-btn';
-    profileBtn.textContent = '👤';
-    profileBtn.addEventListener('click', () => openSettings());
-    document.querySelector('header').appendChild(profileBtn);
-  }
-}
-
-function openSettings(){
+// Profile button click handler
+profileBtn.addEventListener('click', () => {
   settingsNameInput.value = myName;
   avatarLarge.textContent = (myName || 'А').charAt(0).toUpperCase();
   settingsModal.classList.remove('hidden');
-}
+});
 
-function closeSettings(){
+// Close settings modal
+closeSettingsBtn.addEventListener('click', () => {
   settingsModal.classList.add('hidden');
-}
-
-closeSettingsBtn.addEventListener('click', closeSettings);
+});
 
 updateNameBtn.addEventListener('click', () => {
   const newName = settingsNameInput.value.trim();
