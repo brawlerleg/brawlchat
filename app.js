@@ -45,6 +45,12 @@ const joinBtn = document.getElementById('joinBtn');
 const messagesList = document.getElementById('messages');
 const msgForm = document.getElementById('msgForm');
 const msgInput = document.getElementById('msgInput');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const settingsNameInput = document.getElementById('settingsNameInput');
+const updateNameBtn = document.getElementById('updateNameBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const avatarLarge = document.getElementById('avatarLarge');
 
 let myName = null;
 
@@ -131,7 +137,51 @@ joinBtn.addEventListener('click', () => {
   try{ localStorage.setItem('chatName', myName); }catch(e){console.warn('Could not save name to localStorage', e)}
   joinSection.classList.add('hidden');
   chatSection.classList.remove('hidden');
+  updateProfileButton();
   msgInput.focus();
+});
+
+// Profile button in header
+function updateProfileButton(){
+  if(!document.getElementById('profileBtn')){
+    const profileBtn = document.createElement('button');
+    profileBtn.id = 'profileBtn';
+    profileBtn.className = 'profile-btn';
+    profileBtn.textContent = '👤';
+    profileBtn.addEventListener('click', () => openSettings());
+    document.querySelector('header').appendChild(profileBtn);
+  }
+}
+
+function openSettings(){
+  settingsNameInput.value = myName;
+  avatarLarge.textContent = (myName || 'А').charAt(0).toUpperCase();
+  settingsModal.classList.remove('hidden');
+}
+
+function closeSettings(){
+  settingsModal.classList.add('hidden');
+}
+
+closeSettingsBtn.addEventListener('click', closeSettings);
+
+updateNameBtn.addEventListener('click', () => {
+  const newName = settingsNameInput.value.trim();
+  if(!newName) return alert('Введите имя');
+  myName = newName;
+  try{ localStorage.setItem('chatName', myName); }catch(e){console.warn('Could not save name', e)}
+  closeSettings();
+  location.reload();
+});
+
+logoutBtn.addEventListener('click', () => {
+  if(!confirm('Вы уверены? Это вас выведет из аккаунта.')) return;
+  try{ localStorage.removeItem('chatName'); }catch(e){}
+  location.reload();
+});
+
+settingsModal.addEventListener('click', (e) => {
+  if(e.target === settingsModal) closeSettings();
 });
 
 msgForm.addEventListener('submit', async (e) => {
