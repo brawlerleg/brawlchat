@@ -5,20 +5,48 @@
   --muted:#6b7280;
 }
 *{box-sizing:border-box}
-body{font-family:Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);margin:0;padding:20px}
-.container{max-width:720px;margin:0 auto}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-h1{margin:0;font-size:20px}
-.join,label{display:flex;gap:8px;align-items:center}
-input{padding:8px;border:1px solid #ddd;border-radius:6px}
-button{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
-.chat{background:var(--card);padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
-.hidden{display:none}
-#messages{list-style:none;padding:0;margin:0 0 8px 0;max-height:60vh;overflow:auto}
-#messages li{padding:8px;border-radius:6px;margin-bottom:6px;background:#f7f9fc}
-.meta{font-size:12px;color:var(--muted);margin-bottom:6px}
-#msgForm{display:flex;gap:8px}
-#msgInput{flex:1}
 
-.you{background:#e8f0ff}
-.name{font-weight:600;margin-right:8px}
+body{font-family:Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); margin:0; height:100vh;}
+.container{max-width:720px;margin:0 auto;display:flex;flex-direction:column;height:100vh;padding:0 12px}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+h1{margin:0;font-size:20px}
+
+.join,label{display:flex;gap:8px;align-items:center}
+input{padding:10px;border:1px solid #e6e9ee;border-radius:10px;font-size:15px}
+button{background:var(--accent);color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+
+.chat{background:transparent;padding:0;border-radius:8px;display:flex;flex-direction:column;flex:1}
+.hidden{display:none}
+
+#messages{list-style:none;padding:12px;margin:0;flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px}
+#messages li{max-width:78%;padding:10px 12px;border-radius:14px;margin:0;display:inline-block}
+
+.meta{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+#msgForm{display:flex;gap:8px;padding:10px 0;background:transparent}
+#msgInput{flex:1;padding:10px;border-radius:10px;border:1px solid #e6e9ee}
+
+.you{background:#e8f0ff;align-self:flex-end;border-bottom-right-radius:4px}
+.their{background:#ffffff;align-self:flex-start;border-bottom-left-radius:4px}
+.name{font-weight:700;margin-right:6px;font-size:13px}
+
+/* message bubble layout with small avatar initial */
+.msg-row{display:flex;gap:8px;align-items:flex-end}
+.msg-row.their{flex-direction:row}
+.msg-row.you{flex-direction:row-reverse}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* input area fixed at bottom on small screens */
+.bottom-bar{background:var(--card);padding:10px;border-top:1px solid #eee;box-shadow:0 -6px 18px rgba(11,22,40,0.04)}
+
+/* responsive tweaks */
+@media (max-width:600px){
+  .container{padding:0 10px}
+  h1{font-size:18px}
+  #messages li{max-width:86%}
+  .avatar{width:28px;height:28px;font-size:13px}
+  input, #msgInput{font-size:16px}
+}
+
+@media (min-width:601px){
+  .bottom-bar{box-shadow:none}
+}
