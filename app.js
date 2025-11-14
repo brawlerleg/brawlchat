@@ -148,9 +148,19 @@ joinBtn.addEventListener('click', () => {
 
 // Profile button click handler
 profileBtn.addEventListener('click', () => {
+  console.log('Profile button clicked, myName:', myName);
+  console.log('settingsModal:', settingsModal);
+  console.log('settingsNameInput:', settingsNameInput);
+  
+  if (!settingsModal || !settingsNameInput) {
+    console.error('Settings elements not found!');
+    return;
+  }
+  
   settingsNameInput.value = myName;
   avatarLarge.textContent = (myName || 'А').charAt(0).toUpperCase();
   settingsModal.classList.remove('hidden');
+  console.log('Settings modal opened');
 });
 
 // Close settings modal
