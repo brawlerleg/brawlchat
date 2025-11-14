@@ -64,15 +64,30 @@ try{
 }
 
 function addMessageElement(msg){
-  const li = document.createElement('li');
+  const isOwn = msg.name === myName;
+  
+  // wrapper row for message + avatar
+  const msgRow = document.createElement('div');
+  msgRow.className = `msg-row ${isOwn ? 'you' : 'their'}`;
+  
+  // avatar with first letter initial
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  const initial = (msg.name || 'А').charAt(0).toUpperCase();
+  avatar.textContent = initial;
+  
+  // message bubble
+  const bubble = document.createElement('div');
+  bubble.className = isOwn ? 'you' : 'their';
+  
   const meta = document.createElement('div');
   meta.className = 'meta';
   const nameSpan = document.createElement('span');
   nameSpan.className = 'name';
   nameSpan.textContent = msg.name || 'Аноним';
+  
   let ts = '';
   if (msg.ts) {
-    // Firestore Timestamp has toMillis(); serverTimestamp may arrive as a Timestamp
     if (typeof msg.ts.toMillis === 'function') {
       ts = new Date(msg.ts.toMillis()).toLocaleTimeString();
     } else if (typeof msg.ts === 'number') {
@@ -82,13 +97,13 @@ function addMessageElement(msg){
     }
   }
   meta.append(nameSpan, ts ? ` · ${ts}` : '');
-
+  
   const text = document.createElement('div');
   text.textContent = msg.text || '';
-
-  if(msg.name === myName) li.classList.add('you');
-  li.append(meta, text);
-  messagesList.appendChild(li);
+  
+  bubble.append(meta, text);
+  msgRow.append(avatar, bubble);
+  messagesList.appendChild(msgRow);
   messagesList.scrollTop = messagesList.scrollHeight;
 }
 
