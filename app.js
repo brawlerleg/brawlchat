@@ -9,7 +9,10 @@ import {
   query,
   orderBy,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  where,
+  updateDoc,
+  doc
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
 // --- PUT YOUR FIREBASE CONFIG HERE ---
@@ -168,12 +171,35 @@ closeSettingsBtn.addEventListener('click', () => {
   settingsModal.classList.add('hidden');
 });
 
-updateNameBtn.addEventListener('click', () => {
+updateNameBtn.addEventListener('click', async () => {
   const newName = settingsNameInput.value.trim();
   if(!newName) return alert('Введите имя');
+  
+  const oldName = myName;
+  
+  // Update all messages with old name to new name in Firestore
+  if (oldName !== newName) {
+    try {
+      const q = query(messagesCol, where('name', '==', oldName));
+      const snapshot = await getDocs(q);
+      
+      // Update each message
+      snapshot.forEach(async (docSnap) => {
+        const docRef = doc(messagesCol, docSnap.id);
+        await updateDoc(docRef, { name: newName });
+      });
+      
+      console.log(`Updated ${snapshot.size} messages from "${oldName}" to "${newName}"`);
+    } catch (err) {
+      console.error('Error updating messages:', err);
+      alert('Ошибка при обновлении сообщений');
+      return;
+    }
+  }
+  
   myName = newName;
   try{ localStorage.setItem('chatName', myName); }catch(e){console.warn('Could not save name', e)}
-  closeSettings();
+  settingsModal.classList.add('hidden');
   location.reload();
 });
 
