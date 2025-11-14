@@ -29,6 +29,27 @@
         <button>Отправить</button>
       </form>
     </section>
+
+    <!-- Profile Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Профиль</h2>
+          <button class="close-btn" id="closeSettingsBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="avatar-large" id="avatarLarge">А</div>
+          <div class="setting-item">
+            <label>Ваше имя</label>
+            <div class="input-wrapper">
+              <input id="settingsNameInput" type="text" placeholder="Введите имя" />
+              <button id="updateNameBtn" class="update-btn">Сохранить</button>
+            </div>
+          </div>
+          <button id="logoutBtn" class="logout-btn">Выйти из аккаунта</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="app.js"></script>
