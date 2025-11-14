@@ -60,12 +60,18 @@ const profileBtn = document.getElementById('profileBtn');
 profileBtn.style.display = 'none';
 
 let myName = null;
+let myAvatarColor = '#0088cc'; // default color
+let myAvatarImage = null; // image data URL
 
-// restore saved name from localStorage so account persists across reloads
+// restore saved name, avatar color, and image from localStorage
 try{
   const savedName = localStorage.getItem('chatName');
+  const savedColor = localStorage.getItem('chatAvatarColor');
+  const savedImage = localStorage.getItem('chatAvatarImage');
   if (savedName){
     myName = savedName;
+    myAvatarColor = savedColor || '#0088cc';
+    myAvatarImage = savedImage || null;
     nameInput.value = myName;
     joinSection.classList.add('hidden');
     chatSection.classList.remove('hidden');
@@ -84,11 +90,25 @@ function addMessageElement(msg){
   const msgRow = document.createElement('div');
   msgRow.className = `msg-row ${isOwn ? 'you' : 'their'}`;
   
-  // avatar with first letter initial
+  // avatar with first letter initial and color based on author
   const avatar = document.createElement('div');
   avatar.className = 'avatar';
   const initial = (msg.name || 'А').charAt(0).toUpperCase();
   avatar.textContent = initial;
+  
+  // apply image if own and image exists, otherwise use color
+  if (isOwn && myAvatarImage) {
+    avatar.style.backgroundImage = `url('${myAvatarImage}')`;
+    avatar.style.backgroundSize = 'cover';
+    avatar.style.backgroundPosition = 'center';
+    avatar.textContent = ''; // hide initial
+  } else if (isOwn) {
+    avatar.style.background = `linear-gradient(135deg,${myAvatarColor},${lightenColor(myAvatarColor)})`;
+  } else {
+    // generate consistent color for other users based on their name
+    const hashColor = generateColorFromName(msg.name || 'Аноним');
+    avatar.style.background = `linear-gradient(135deg,${hashColor},${lightenColor(hashColor)})`;
+  }
   
   // message bubble
   const bubble = document.createElement('div');
@@ -119,6 +139,27 @@ function addMessageElement(msg){
   msgRow.append(avatar, bubble);
   messagesList.appendChild(msgRow);
   messagesList.scrollTop = messagesList.scrollHeight;
+}
+
+// Helper: generate color from name hash
+function generateColorFromName(name) {
+  const colors = ['#0088cc', '#00cc88', '#cc8800', '#cc0088', '#8800cc', '#00cccc'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = ((hash << 5) - hash) + name.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
+// Helper: lighten color for gradient
+function lightenColor(color) {
+  const hex = color.replace('#', '');
+  const num = parseInt(hex, 16);
+  const r = Math.min(255, (num >> 16) + 80);
+  const g = Math.min(255, ((num >> 8) & 0x00FF) + 80);
+  const b = Math.min(255, (num & 0x0000FF) + 80);
+  return '#' + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
 }
 
 // realtime listener (Firestore) — single source of truth, handles initial load and updates
@@ -152,18 +193,39 @@ joinBtn.addEventListener('click', () => {
 // Profile button click handler
 profileBtn.addEventListener('click', () => {
   console.log('Profile button clicked, myName:', myName);
-  console.log('settingsModal:', settingsModal);
-  console.log('settingsNameInput:', settingsNameInput);
-  
-  if (!settingsModal || !settingsNameInput) {
-    console.error('Settings elements not found!');
-    return;
-  }
   
   settingsNameInput.value = myName;
   avatarLarge.textContent = (myName || 'А').charAt(0).toUpperCase();
+  avatarLarge.style.background = `linear-gradient(135deg,${myAvatarColor},${lightenColor(myAvatarColor)})`;
+  
+  // Mark active color button
+  document.querySelectorAll('.color-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.color === myAvatarColor) {
+      btn.classList.add('active');
+    }
+  });
+  
   settingsModal.classList.remove('hidden');
   console.log('Settings modal opened');
+});
+
+// Color picker handlers
+document.querySelectorAll('.color-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    myAvatarColor = btn.dataset.color;
+    
+    // Update active button
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Update avatar preview
+    avatarLarge.style.background = `linear-gradient(135deg,${myAvatarColor},${lightenColor(myAvatarColor)})`;
+    
+    // Save to localStorage
+    try { localStorage.setItem('chatAvatarColor', myAvatarColor); } catch(e) {}
+  });
 });
 
 // Close settings modal
